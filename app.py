@@ -239,45 +239,40 @@ details summary {
 
 # ── Model loader ───────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def load_model():
-    model_name = "t5-small"
-
-    tokenizer = T5Tokenizer.from_pretrained(model_name)
-    model = T5ForConditionalGeneration.from_pretrained(model_name)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model.to(device)
-
+def load_model(model_path: str):
+    tokenizer = T5Tokenizer.from_pretrained(model_path)
+    model = T5ForConditionalGeneration.from_pretrained(model_path)
     model.eval()
-    return tokenizer, model, device
+    return tokenizer, model
 
 
-# ── Generate Summary ────────────────────────────────
-def generate_summary(text, max_len, min_len, num_beams, rep_penalty,
-                     tokenizer, model, device):
-
+def generate_summary(text: str, max_len: int, min_len: int, num_beams: int,
+                     rep_penalty: float, tokenizer, model) -> str:
     input_text = "summarize: " + text.strip()
-
-    inputs = tokenizer(
-        input_text,
-        max_length=512,
-        truncation=True,
-        return_tensors="pt"
-    ).to(device)
-
-    with torch.no_grad():
-        ids = model.generate(
-            inputs["input_ids"],
-            max_length=max_len,
-            min_length=min_len,
-            num_beams=num_beams,
-            repetition_penalty=rep_penalty,
-            no_repeat_ngram_size=3,
-            early_stopping=True,
-        )
-
+    inputs = tokenizer(input_text, max_length=512, truncation=True, return_tensors="pt")
+    ids = model.generate(
+        inputs["input_ids"],
+        max_length=max_len,
+        min_length=min_len,
+        num_beams=num_beams,
+        repetition_penalty=rep_penalty,
+        no_repeat_ngram_size=3,
+        early_stopping=True,
+    )
     return tokenizer.decode(ids[0], skip_special_tokens=True)
 
+
+def word_count(text: str) -> int:
+    return len(re.findall(r"\S+", text))
+
+
+def compression_ratio(original: str, summary: str) -> str:
+    orig_wc = word_count(original)
+    summ_wc = word_count(summary)
+    if orig_wc == 0:
+        return "—"
+    ratio = round((1 - summ_wc / orig_wc) * 100)
+    return f"{ratio}%"
 
 
 # ── UI ─────────────────────────────────────────────────────────────────────────
