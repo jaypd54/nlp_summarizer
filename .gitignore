@@ -1,0 +1,18 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Model files (IMPORTANT for T5)
+model/
+*.bin
+*.safetensors
+*.pt
+
+# Streamlit cache
+.streamlit/
+
+# System files
+.DS_Store
