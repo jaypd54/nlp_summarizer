@@ -239,9 +239,12 @@ details summary {
 
 # ── Model loader ───────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
-def load_model(model_path: str):
-    tokenizer = T5Tokenizer.from_pretrained(model_path)
-    model = T5ForConditionalGeneration.from_pretrained(model_path)
+def load_model():
+    model_name = "t5-small"
+
+    tokenizer = T5Tokenizer.from_pretrained(model_name)
+    model = T5ForConditionalGeneration.from_pretrained(model_name)
+
     model.eval()
     return tokenizer, model
 
@@ -288,12 +291,6 @@ st.markdown("""
 # Model path input (sidebar)
 with st.sidebar:
     st.markdown('<p class="field-label">Model path</p>', unsafe_allow_html=True)
-    model_path = st.text_input(
-        label="model_path",
-        value="model/t5_summarizer_model",
-        label_visibility="collapsed",
-        placeholder="path/to/model",
-    )
     st.markdown('<hr class="thin-rule"/>', unsafe_allow_html=True)
     st.markdown('<p class="field-label">About</p>', unsafe_allow_html=True)
     st.caption("T5-small fine-tuned for abstractive summarization. Paste any article or passage to generate a concise summary.")
@@ -301,7 +298,7 @@ with st.sidebar:
 # Load model
 try:
     with st.spinner("Loading model weights…"):
-        tokenizer, model = load_model(model_path)
+        tokenizer, model = load_model()
     model_ready = True
 except Exception as e:
     model_ready = False
